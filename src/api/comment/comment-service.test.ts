@@ -6,7 +6,11 @@ import { createCommentService } from "./comment-service.ts";
 
 describe("CommentService unit tests", () => {
 	it("getComment: should return a comment if it exists", async () => {
-		const mockComment = { id: "1", content: "Mock content" };
+		const mockComment = {
+			id: "1",
+			content: "Mock content",
+			created_at: new Date(),
+		};
 
 		const mockRepo: Partial<CommentRepository> = {
 			getComment: async (id) => (id === "1" ? mockComment : undefined),
@@ -51,8 +55,8 @@ describe("CommentService unit tests", () => {
 
 	it("listComments: should return an array of comments", async () => {
 		const mockComments: CommentEntity[] = [
-			{ id: "1", content: "First comment content" },
-			{ id: "2", content: "Second comment content" },
+			{ id: "1", content: "First comment content", created_at: new Date() },
+			{ id: "2", content: "Second comment content", created_at: new Date() },
 		];
 
 		const mockRepo: Partial<CommentRepository> = {
@@ -70,7 +74,7 @@ describe("CommentService unit tests", () => {
 		const mockComment = { content: "New comment content" };
 
 		const mockRepo: Partial<CommentRepository> = {
-			create: async (data) => ({ id: "999", ...data }),
+			create: async (data) => ({ id: "999", created_at: new Date(), ...data }),
 		};
 
 		const service = createCommentService(mockRepo as CommentRepository);
@@ -108,7 +112,11 @@ describe("CommentService unit tests", () => {
 		const updateData = { content: "Updated Content" };
 
 		const mockRepo: Partial<CommentRepository> = {
-			update: async (id, data) => ({ id, content: data.content! }),
+			update: async (id, data) => ({
+				id,
+				content: data.content!,
+				created_at: new Date(),
+			}),
 		};
 
 		const service = createCommentService(mockRepo as CommentRepository);
