@@ -1,13 +1,16 @@
 import assert from "node:assert";
 import type { Server } from "node:http";
-import { after, before, describe, test } from "node:test";
+import { after, before, beforeEach, describe, test } from "node:test";
 import { app } from "../../app/app.ts";
+import { db } from "../../shared/database/database.ts";
+import { migrateDb } from "../utils/migrate-db.ts";
 
 describe("Comment API - /v1/comment", () => {
 	let server: Server;
 	let baseUrl: string;
 
 	before(async () => {
+		await migrateDb();
 		server = app.listen(0);
 		const address = server.address();
 		if (address && typeof address !== "string") {
@@ -15,7 +18,12 @@ describe("Comment API - /v1/comment", () => {
 		}
 	});
 
-	after(() => {
+	beforeEach(async () => {
+		await db.deleteFrom("comments").execute();
+	});
+
+	after(async () => {
+		await db.destroy();
 		server.close();
 	});
 
@@ -47,6 +55,11 @@ describe("Comment API - /v1/comment", () => {
 	});
 
 	test("GET / - should return all comments and 200", async () => {
+		await db
+			.insertInto("comments")
+			.values({ content: "First comment content" })
+			.execute();
+
 		const response = await fetch(`${baseUrl}/`);
 		const body = await response.json();
 
@@ -56,17 +69,29 @@ describe("Comment API - /v1/comment", () => {
 	});
 
 	test("GET /:id - should return 200 for existing comment", async () => {
-		const res = await fetch(`${baseUrl}/1`);
+		const seededComment = await db
+			.insertInto("comments")
+			.values({ content: "Seeded comment" })
+			.returningAll()
+			.executeTakeFirstOrThrow();
+
+		const res = await fetch(`${baseUrl}/${seededComment.id}`);
 		const body = await res.json();
 
 		assert.strictEqual(res.status, 200);
-		assert.strictEqual(body.id, "1");
+		assert.strictEqual(body.id, seededComment.id);
 	});
 
-	test("PATH :/id - should update comment content and return 200", async () => {
+	test("PATCH :/id - should update comment content and return 200", async () => {
+		const seededComment = await db
+			.insertInto("comments")
+			.values({ content: "Seeded comment to update" })
+			.returningAll()
+			.executeTakeFirstOrThrow();
+
 		const updatePayload = { content: "Updated integration test comment" };
 
-		const res = await fetch(`${baseUrl}/2`, {
+		const res = await fetch(`${baseUrl}/${seededComment.id}`, {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(updatePayload),

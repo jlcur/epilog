@@ -1,3 +1,5 @@
+import type { Kysely } from "kysely";
+import type { Database } from "../../shared/database/types.ts";
 import type {
 	CreateCommentInput,
 	UpdateCommentInput,
@@ -6,29 +8,28 @@ import type {
 export interface CommentEntity {
 	id: string;
 	content: string;
+	created_at: Date;
 }
 
-const comments: CommentEntity[] = [
-	{ id: "1", content: "Hello, world!" },
-	{ id: "2", content: "asdfaff" },
-	{ id: "3", content: "Lorem ipsum dolor sit amet." },
-];
-
-export const createCommentRepository = () => ({
+export const createCommentRepository = (db: Kysely<Database>) => ({
 	/**
 	 * Finds a comment by ID
 	 * @param id
 	 * @returns The comment
 	 */
 	async getComment(id: string) {
-		return comments.find((comment) => comment.id === id);
+		return await db
+			.selectFrom("comments")
+			.selectAll()
+			.where("id", "=", id)
+			.executeTakeFirst();
 	},
 	/**
 	 * Returns all comments
 	 * @returns All comments
 	 */
 	async list() {
-		return comments;
+		return await db.selectFrom("comments").selectAll().execute();
 	},
 	/**
 	 * Creates a new comment
@@ -36,10 +37,13 @@ export const createCommentRepository = () => ({
 	 * @returns The created comment
 	 */
 	async create(data: CreateCommentInput) {
-		const newId = (comments.length + 1).toString();
-		const newComment = { id: newId, ...data };
-		comments.push(newComment);
-		return newComment;
+		return await db
+			.insertInto("comments")
+			.values({
+				content: data.content,
+			})
+			.returningAll()
+			.executeTakeFirstOrThrow();
 	},
 	/**
 	 * Deletes a comment by ID
@@ -47,13 +51,12 @@ export const createCommentRepository = () => ({
 	 * @returns True if comment was found and deleted, false if comment was not found
 	 */
 	async delete(id: string) {
-		const index = comments.findIndex((comment) => comment.id === id);
+		const result = await db
+			.deleteFrom("comments")
+			.where("id", "=", id)
+			.executeTakeFirst();
 
-		if (index === -1) {
-			return false;
-		}
-		comments.splice(index, 1);
-		return true;
+		return Number(result.numDeletedRows) > 0;
 	},
 	/**
 	 * Updates a comment by ID
@@ -62,17 +65,16 @@ export const createCommentRepository = () => ({
 	 * @returns Updated comment or null if not found
 	 */
 	async update(id: string, data: UpdateCommentInput) {
-		const comment = await this.getComment(id);
+		if (!data.content) return null;
 
-		if (!comment) {
-			return null;
-		}
-
-		if (data.content !== undefined) {
-			comment.content = data.content;
-		}
-
-		return comment;
+		return (
+			(await db
+				.updateTable("comments")
+				.set({ content: data.content })
+				.where("id", "=", id)
+				.returningAll()
+				.executeTakeFirst()) ?? null
+		);
 	},
 });
 

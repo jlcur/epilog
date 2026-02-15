@@ -1,5 +1,6 @@
 import express from "express";
 import { validateRequest } from "../../middleware/validate.ts";
+import { db } from "../../shared/database/database.ts";
 import { createCommentHandlers } from "./comment-handler.ts";
 import { createCommentRepository } from "./comment-repository.ts";
 import {
@@ -11,7 +12,7 @@ import { createCommentService } from "./comment-service.ts";
 
 const router = express.Router();
 
-const repository = createCommentRepository();
+const repository = createCommentRepository(db);
 const service = createCommentService(repository);
 const handlers = createCommentHandlers(service);
 
