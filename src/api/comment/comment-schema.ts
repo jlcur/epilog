@@ -7,7 +7,7 @@ export const commentSchema = z.object({
 
 export const getCommentByIdSchema = z.object({
 	params: z.object({
-		commentId: z.string().min(1, "Comment ID is required"),
+		commentId: z.uuid().min(1, "Comment ID is required"),
 	}),
 });
 
@@ -24,7 +24,7 @@ export const updateCommentSchema = z.object({
 		content: z.string().min(1).optional(),
 	}),
 	params: z.object({
-		commentId: z.string().min(1),
+		commentId: z.uuid().min(1),
 	}),
 });
 
