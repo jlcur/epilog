@@ -20,7 +20,7 @@ app.use(
 	}),
 );
 
-app.use("/v1", router);
+app.use("/api/v1", router);
 
 app.get("/", (_req: Request, res: Response) => {
 	res.send("Hello, world!");

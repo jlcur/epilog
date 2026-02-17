@@ -5,7 +5,7 @@ import { app } from "../../app/app.ts";
 import { db } from "../../shared/database/database.ts";
 import { migrateDb } from "../utils/migrate-db.ts";
 
-describe("Comment API - /v1/comment", () => {
+describe("Comment API - api/v1/comment", () => {
 	let server: Server;
 	let baseUrl: string;
 
@@ -14,7 +14,7 @@ describe("Comment API - /v1/comment", () => {
 		server = app.listen(0);
 		const address = server.address();
 		if (address && typeof address !== "string") {
-			baseUrl = `http://localhost:${address.port}/v1/comment`;
+			baseUrl = `http://localhost:${address.port}/api/v1/comment`;
 		}
 	});
 
