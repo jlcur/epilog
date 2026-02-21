@@ -1,4 +1,5 @@
 import type { Kysely } from "kysely";
+import short from "short-uuid";
 import type { Database } from "../../shared/database/types.ts";
 import type {
 	CreateCommentInput,
@@ -11,25 +12,38 @@ export interface CommentEntity {
 	created_at: Date;
 }
 
+const translator = short.createTranslator();
+
 export const createCommentRepository = (db: Kysely<Database>) => ({
 	/**
 	 * Finds a comment by ID
-	 * @param id
+	 * @param id A shortened UUID
 	 * @returns The comment
 	 */
 	async getComment(id: string) {
-		return await db
+		const longId = translator.toUUID(id);
+
+		const result = await db
 			.selectFrom("comments")
 			.selectAll()
-			.where("id", "=", id)
+			.where("id", "=", longId)
 			.executeTakeFirst();
+
+		return result
+			? { ...result, id: translator.fromUUID(result.id) }
+			: undefined;
 	},
 	/**
 	 * Returns all comments
 	 * @returns All comments
 	 */
 	async list() {
-		return await db.selectFrom("comments").selectAll().execute();
+		const result = await db.selectFrom("comments").selectAll().execute();
+
+		return result.map((row) => ({
+			...row,
+			id: translator.fromUUID(row.id),
+		}));
 	},
 	/**
 	 * Creates a new comment
@@ -37,13 +51,15 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 	 * @returns The created comment
 	 */
 	async create(data: CreateCommentInput) {
-		return await db
+		const result = await db
 			.insertInto("comments")
 			.values({
 				content: data.content,
 			})
 			.returningAll()
 			.executeTakeFirstOrThrow();
+
+		return { ...result, id: translator.fromUUID(result.id) };
 	},
 	/**
 	 * Deletes a comment by ID
@@ -51,9 +67,11 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 	 * @returns True if comment was found and deleted, false if comment was not found
 	 */
 	async delete(id: string) {
+		const longId = translator.toUUID(id);
+
 		const result = await db
 			.deleteFrom("comments")
-			.where("id", "=", id)
+			.where("id", "=", longId)
 			.executeTakeFirst();
 
 		return Number(result.numDeletedRows) > 0;
@@ -67,14 +85,17 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 	async update(id: string, data: UpdateCommentInput) {
 		if (!data.content) return null;
 
-		return (
+		const longId = translator.toUUID(id);
+
+		const result =
 			(await db
 				.updateTable("comments")
 				.set({ content: data.content })
-				.where("id", "=", id)
+				.where("id", "=", longId)
 				.returningAll()
-				.executeTakeFirst()) ?? null
-		);
+				.executeTakeFirst()) ?? null;
+
+		return result ? { ...result, id: translator.fromUUID(result.id) } : null;
 	},
 });
 
