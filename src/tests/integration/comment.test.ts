@@ -1,9 +1,12 @@
 import assert from "node:assert";
 import type { Server } from "node:http";
 import { after, before, beforeEach, describe, test } from "node:test";
+import short from "short-uuid";
 import { app } from "../../app/app.ts";
 import { db } from "../../shared/database/database.ts";
 import { migrateDb } from "../utils/migrate-db.ts";
+
+const translator = short.createTranslator();
 
 describe("Comment API - api/v1/comment", () => {
 	let server: Server;
@@ -75,11 +78,13 @@ describe("Comment API - api/v1/comment", () => {
 			.returningAll()
 			.executeTakeFirstOrThrow();
 
-		const res = await fetch(`${baseUrl}/${seededComment.id}`);
+		const shortId = translator.fromUUID(seededComment.id);
+
+		const res = await fetch(`${baseUrl}/${shortId}`);
 		const body = await res.json();
 
 		assert.strictEqual(res.status, 200);
-		assert.strictEqual(body.id, seededComment.id);
+		assert.strictEqual(body.id, shortId);
 	});
 
 	test("PATCH :/id - should update comment content and return 200", async () => {
@@ -91,7 +96,9 @@ describe("Comment API - api/v1/comment", () => {
 
 		const updatePayload = { content: "Updated integration test comment" };
 
-		const res = await fetch(`${baseUrl}/${seededComment.id}`, {
+		const shortId = translator.fromUUID(seededComment.id);
+
+		const res = await fetch(`${baseUrl}/${shortId}`, {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(updatePayload),

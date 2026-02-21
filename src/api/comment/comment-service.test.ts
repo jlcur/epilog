@@ -1,25 +1,30 @@
+// @ts-nocheck
+
 import assert from "node:assert";
 import { describe, it } from "node:test";
+import type { SUUID } from "short-uuid/src/types.ts";
 import type AppError from "../../shared/errors/AppError.ts";
 import type { CommentEntity, CommentRepository } from "./comment-repository.ts";
 import { createCommentService } from "./comment-service.ts";
 
 describe("CommentService unit tests", () => {
+	const mockShortId = "v9m6fK7uS3p2L4qR9n8M5j" as unknown as SUUID;
+
 	it("getComment: should return a comment if it exists", async () => {
 		const mockComment = {
-			id: "1",
+			id: mockShortId,
 			content: "Mock content",
 			created_at: new Date(),
 		};
 
 		const mockRepo: Partial<CommentRepository> = {
-			getComment: async (id) => (id === "1" ? mockComment : undefined),
+			getComment: async (id) => (id === mockShortId ? mockComment : undefined),
 		};
 
 		const service = createCommentService(mockRepo as CommentRepository);
-		const result = await service.getComment("1");
+		const result = await service.getComment(mockShortId);
 
-		assert.strictEqual(result.id, "1");
+		assert.strictEqual(result.id, mockShortId);
 		assert.strictEqual(result.content, "Mock content");
 	});
 
