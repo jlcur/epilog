@@ -7,7 +7,11 @@ export const commentSchema = z.object({
 
 export const getCommentByIdSchema = z.object({
 	params: z.object({
-		commentId: z.uuid().min(1, "Comment ID is required"),
+		commentId: z
+			.string()
+			.min(1, "Comment ID is required")
+			.min(22, "Must be valid short UUID format.")
+			.max(22, "Must be valid short UUID format."),
 	}),
 });
 
@@ -24,7 +28,11 @@ export const updateCommentSchema = z.object({
 		content: z.string().min(1).optional(),
 	}),
 	params: z.object({
-		commentId: z.uuid().min(1),
+		commentId: z
+			.string()
+			.min(1, "Comment ID is required")
+			.min(22, "Must be valid short UUID format.")
+			.max(22, "Must be valid short UUID format."),
 	}),
 });
 
