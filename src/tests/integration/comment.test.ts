@@ -108,4 +108,24 @@ describe("Comment API - api/v1/comment", () => {
 		assert.strictEqual(res.status, 200);
 		assert.strictEqual(body.content, "Updated integration test comment");
 	});
+
+	test("DELETE :/id - should delete comment and return 204 no content", async () => {
+		const seededComment = await db
+			.insertInto("comments")
+			.values({ content: "Seeded comment data to delete" })
+			.returningAll()
+			.executeTakeFirstOrThrow();
+
+		const shortId = translator.fromUUID(seededComment.id);
+
+		const res = await fetch(`${baseUrl}/${shortId}`, {
+			method: "DELETE",
+		});
+
+		assert.strictEqual(res.status, 204);
+
+		// Comments table should now be empty
+		const commentsTable = await db.selectFrom("comments").selectAll().execute();
+		assert.strictEqual(commentsTable.length, 0);
+	});
 });
