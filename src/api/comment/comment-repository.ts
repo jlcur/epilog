@@ -70,11 +70,15 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 		const longId = translator.toUUID(id);
 
 		const result = await db
-			.deleteFrom("comments")
+			.updateTable("comments")
+			.set({
+				is_deleted: true,
+				content: "[ This comment has been deleted ]",
+			})
 			.where("id", "=", longId)
 			.executeTakeFirst();
 
-		return Number(result.numDeletedRows) > 0;
+		return Number(result.numUpdatedRows) > 0;
 	},
 	/**
 	 * Updates a comment by ID
