@@ -5,6 +5,8 @@ export interface CommentTable {
 	content: string;
 	created_at: ColumnType<Date, string | undefined, never>;
 	updated_at: ColumnType<Date, never, never>;
+	parent_id: string | null;
+	is_deleted: boolean;
 }
 
 export interface Database {
