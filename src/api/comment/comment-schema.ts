@@ -20,6 +20,7 @@ export const createCommentSchema = z.object({
 		content: z
 			.string()
 			.min(1, "Comment content must be at least one character"),
+		parent_id: z.string().nullable().optional(),
 	}),
 });
 

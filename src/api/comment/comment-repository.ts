@@ -30,7 +30,13 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 			.executeTakeFirst();
 
 		return result
-			? { ...result, id: translator.fromUUID(result.id) }
+			? {
+					...result,
+					id: translator.fromUUID(result.id),
+					parent_id: result.parent_id
+						? translator.fromUUID(result.parent_id)
+						: null,
+				}
 			: undefined;
 	},
 	/**
@@ -43,6 +49,7 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 		return result.map((row) => ({
 			...row,
 			id: translator.fromUUID(row.id),
+			parent_id: row.parent_id ? translator.fromUUID(row.parent_id) : null,
 		}));
 	},
 	/**
@@ -51,10 +58,13 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 	 * @returns The created comment
 	 */
 	async create(data: CreateCommentInput) {
+		const longId = data.parent_id ? translator.toUUID(data.parent_id) : null;
+
 		const result = await db
 			.insertInto("comments")
 			.values({
 				content: data.content,
+				parent_id: longId,
 			})
 			.returningAll()
 			.executeTakeFirstOrThrow();
