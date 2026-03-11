@@ -1,14 +1,26 @@
+import { toNodeHandler } from "better-auth/node";
+import cors from "cors";
 import express, { type Request, type Response } from "express";
 import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 import { handleError } from "../middleware/error-handler.ts";
 import logger from "../shared/logging/logger.ts";
+import { auth } from "../utils/auth.ts";
 import { router } from "./routes.ts";
 
 export const app = express();
 
 // Set HTTP security headers
 app.use(helmet());
+
+app.use(
+	cors({
+		origin: "http://localhost:3000",
+		credentials: true,
+	}),
+);
+
+app.all("/api/v1/auth/*any", toNodeHandler(auth));
 
 // Parse JSON request body
 app.use(express.json());
