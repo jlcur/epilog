@@ -26,8 +26,10 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 
 		const result = await db
 			.selectFrom("comments")
-			.selectAll()
-			.where("id", "=", longId)
+			.leftJoin("user", "comments.user_id", "user.id")
+			.where("comments.id", "=", longId)
+			.selectAll("comments")
+			.select("user.name as user_name")
 			.executeTakeFirst();
 
 		return result
@@ -45,7 +47,12 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 	 * @returns All comments
 	 */
 	async list() {
-		const result = await db.selectFrom("comments").selectAll().execute();
+		const result = await db
+			.selectFrom("comments")
+			.leftJoin("user", "comments.user_id", "user.id")
+			.selectAll("comments")
+			.select("user.name as user_name")
+			.execute();
 
 		return result.map((row) => ({
 			...row,
