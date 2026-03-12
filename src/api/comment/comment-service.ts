@@ -8,7 +8,10 @@ import type {
 export interface CommentService {
 	getComment(id: string): Promise<CommentEntity>;
 	listComments(): Promise<CommentEntity[]>;
-	createComment(data: CreateCommentInput): Promise<CommentEntity>;
+	createComment(
+		data: CreateCommentInput,
+		userId: string | null,
+	): Promise<CommentEntity>;
 	deleteComment(id: string): Promise<void>;
 	updateComment(id: string, data: UpdateCommentInput): Promise<CommentEntity>;
 }
@@ -24,8 +27,9 @@ export const createCommentService = (
 	async listComments() {
 		return await repo.list();
 	},
-	async createComment(data: CreateCommentInput) {
-		return await repo.create(data);
+	async createComment(data: CreateCommentInput, userId: string | null) {
+		const commentData = { ...data, userId };
+		return await repo.create(commentData);
 	},
 	async deleteComment(id: string) {
 		const deleted = await repo.delete(id);

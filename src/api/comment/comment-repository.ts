@@ -57,7 +57,7 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 	 * @param data The comment data to create
 	 * @returns The created comment
 	 */
-	async create(data: CreateCommentInput) {
+	async create(data: CreateCommentInput & { userId: string | null }) {
 		const longId = data.parent_id ? translator.toUUID(data.parent_id) : null;
 
 		const result = await db
@@ -65,6 +65,7 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 			.values({
 				content: data.content,
 				parent_id: longId,
+				user_id: data.userId,
 			})
 			.returningAll()
 			.executeTakeFirstOrThrow();
