@@ -1,6 +1,5 @@
-import { fromNodeHeaders } from "better-auth/node";
 import type { Request, Response } from "express";
-import { auth } from "../../utils/auth.ts";
+
 import type { GetCommentParams } from "./comment-schema.ts";
 import type { CommentService } from "./comment-service.ts";
 
@@ -17,10 +16,7 @@ export const createCommentHandlers = (service: CommentService) => ({
 	},
 
 	createComment: async (req: Request, res: Response) => {
-		const session = await auth.api.getSession({
-			headers: fromNodeHeaders(req.headers),
-		});
-		const userId = session?.user.id ?? null;
+		const userId = res.locals.user.id;
 		const comment = await service.createComment(req.body, userId);
 		return res.status(201).json(comment);
 	},
