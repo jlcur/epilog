@@ -23,7 +23,8 @@ export const createCommentHandlers = (service: CommentService) => ({
 
 	deleteComment: async (req: Request<GetCommentParams>, res: Response) => {
 		const { commentId } = req.params;
-		await service.deleteComment(commentId);
+		const userId = res.locals.user.id;
+		await service.deleteComment(commentId, userId);
 		return res.status(204).send();
 	},
 
