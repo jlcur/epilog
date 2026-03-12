@@ -7,6 +7,7 @@ export interface CommentTable {
 	updated_at: ColumnType<Date, never, never>;
 	parent_id: string | null;
 	is_deleted: Generated<boolean>;
+	user_id: string | null;
 }
 
 interface UserTable {
