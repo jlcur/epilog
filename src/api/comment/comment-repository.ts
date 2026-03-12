@@ -10,6 +10,7 @@ export interface CommentEntity {
 	id: string;
 	content: string;
 	created_at: Date;
+	user_id: string | null;
 }
 
 const translator = short.createTranslator();
