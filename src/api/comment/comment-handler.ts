@@ -29,7 +29,9 @@ export const createCommentHandlers = (service: CommentService) => ({
 	},
 
 	updateComment: async (req: Request<GetCommentParams>, res: Response) => {
-		const comment = await service.updateComment(req.params.commentId, req.body);
+		const { commentId } = req.params;
+		const userId = res.locals.user.id;
+		const comment = await service.updateComment(commentId, req.body, userId);
 		return res.status(200).json(comment);
 	},
 });

@@ -13,7 +13,11 @@ export interface CommentService {
 		userId: string | null,
 	): Promise<CommentEntity>;
 	deleteComment(id: string, userId: string | null): Promise<void>;
-	updateComment(id: string, data: UpdateCommentInput): Promise<CommentEntity>;
+	updateComment(
+		id: string,
+		data: UpdateCommentInput,
+		userId: string | null,
+	): Promise<CommentEntity | null>;
 }
 
 export const createCommentService = (
@@ -39,9 +43,16 @@ export const createCommentService = (
 
 		await repo.delete(id);
 	},
-	async updateComment(id: string, data: UpdateCommentInput) {
-		const updatedComment = await repo.update(id, data);
-		if (!updatedComment) throw new AppError(404, "Comment not found");
-		return updatedComment;
+	async updateComment(
+		id: string,
+		data: UpdateCommentInput,
+		userId: string | null,
+	) {
+		const comment = await repo.getComment(id);
+
+		if (!comment) throw new AppError(404, "Comment not found");
+		if (comment.user_id !== userId) throw new AppError(403, "Forbidden");
+
+		return await repo.update(id, data);
 	},
 });
