@@ -1,4 +1,5 @@
 import express from "express";
+import { authenticateUser } from "../../middleware/authenticate-user.ts";
 import { validateRequest } from "../../middleware/validate.ts";
 import { db } from "../../shared/database/database.ts";
 import { createCommentHandlers } from "./comment-handler.ts";
@@ -19,12 +20,24 @@ const handlers = createCommentHandlers(service);
 router
 	.route("/:commentId")
 	.get(validateRequest(getCommentByIdSchema), handlers.getCommentById)
-	.delete(validateRequest(getCommentByIdSchema), handlers.deleteComment)
-	.patch(validateRequest(updateCommentSchema), handlers.updateComment);
+	.delete(
+		authenticateUser,
+		validateRequest(getCommentByIdSchema),
+		handlers.deleteComment,
+	)
+	.patch(
+		authenticateUser,
+		validateRequest(updateCommentSchema),
+		handlers.updateComment,
+	);
 
 router
 	.route("/")
 	.get(handlers.getAllComments)
-	.post(validateRequest(createCommentSchema), handlers.createComment);
+	.post(
+		authenticateUser,
+		validateRequest(createCommentSchema),
+		handlers.createComment,
+	);
 
 export default router;
