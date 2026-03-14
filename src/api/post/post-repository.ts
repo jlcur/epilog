@@ -1,6 +1,7 @@
 import type { Kysely } from "kysely";
 import short from "short-uuid";
 import type { Database } from "../../shared/database/types.ts";
+import type { CreatePostInput } from "./post-schema.ts";
 
 export interface PostEntity {
 	id: string;
@@ -31,6 +32,19 @@ export const createPostRepository = (db: Kysely<Database>) => ({
 					id: translator.fromUUID(result.id),
 				}
 			: undefined;
+	},
+	async create(data: CreatePostInput & { userId: string | null }) {
+		const result = await db
+			.insertInto("posts")
+			.values({
+				title: data.title,
+				content: data.content,
+				user_id: data.userId,
+			})
+			.returningAll()
+			.executeTakeFirstOrThrow();
+
+		return { ...result, id: translator.fromUUID(result.id) };
 	},
 });
 

@@ -1,9 +1,10 @@
 import express from "express";
+import { authenticateUser } from "../../middleware/authenticate-user.ts";
 import { validateRequest } from "../../middleware/validate.ts";
 import { db } from "../../shared/database/database.ts";
 import { createPostHandlers } from "./post-handler.ts";
 import { createPostRepository } from "./post-repository.ts";
-import { getPostByIdSchema } from "./post-schema.ts";
+import { createPostSchema, getPostByIdSchema } from "./post-schema.ts";
 import { createPostService } from "./post-service.ts";
 
 const router = express.Router();
@@ -15,5 +16,13 @@ const handlers = createPostHandlers(service);
 router
 	.route("/:postId")
 	.get(validateRequest(getPostByIdSchema), handlers.getPostById);
+
+router
+	.route("/")
+	.post(
+		authenticateUser,
+		validateRequest(createPostSchema),
+		handlers.createPost,
+	);
 
 export default router;
