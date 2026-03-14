@@ -10,6 +10,15 @@ export interface CommentTable {
 	user_id: string | null;
 }
 
+interface PostsTable {
+	id: Generated<string>;
+	title: string;
+	content: string;
+	user_id: string | null;
+	created_at: ColumnType<Date, string | undefined, never>;
+	updated_at: ColumnType<Date, never, never>;
+}
+
 interface UserTable {
 	id: string;
 	name: string;
@@ -61,4 +70,5 @@ export interface Database {
 	session: SessionTable;
 	account: AccountTable;
 	verification: VerificationTable;
+	posts: PostsTable;
 }
