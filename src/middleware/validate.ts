@@ -18,15 +18,19 @@ export const validateRequest =
 			});
 
 			// Overwrite request object
-			if (parsed.body !== undefined) {
-				req.body = parsed.body;
-			}
-			if (parsed.query !== undefined) {
-				req.query = parsed.query as typeof req.query;
-			}
-			if (parsed.params !== undefined) {
-				req.params = parsed.params as typeof req.params;
-			}
+			// if (parsed.body !== undefined) {
+			// 	req.body = parsed.body;
+			// }
+			// if (parsed.query !== undefined) {
+			// 	req.query = parsed.query as any;
+			// }
+			// if (parsed.params !== undefined) {
+			// 	req.params = parsed.params as any;
+			// }
+
+			res.locals.body = parsed.body;
+			res.locals.query = parsed.query;
+			res.locals.params = parsed.params;
 
 			// Validation was successfully continue
 			next();
