@@ -8,6 +8,7 @@ import {
 	createPostSchema,
 	getAllPostsPaginatedSchema,
 	getPostByIdSchema,
+	updatePostSchema,
 } from "./post-schema.ts";
 import { createPostService } from "./post-service.ts";
 
@@ -24,6 +25,11 @@ router
 		authenticateUser,
 		validateRequest(getPostByIdSchema),
 		handlers.deletePostById,
+	)
+	.patch(
+		authenticateUser,
+		validateRequest(updatePostSchema),
+		handlers.updatePost,
 	);
 
 router

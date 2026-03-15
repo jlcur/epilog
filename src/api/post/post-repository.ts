@@ -1,7 +1,7 @@
 import type { Kysely } from "kysely";
 import short from "short-uuid";
 import type { Database } from "../../shared/database/types.ts";
-import type { CreatePostInput } from "./post-schema.ts";
+import type { CreatePostInput, UpdatePostInput } from "./post-schema.ts";
 
 export interface PostEntity {
 	id: string;
@@ -86,6 +86,21 @@ export const createPostRepository = (db: Kysely<Database>) => ({
 			.deleteFrom("posts")
 			.where("posts.id", "=", longId)
 			.execute();
+	},
+	async update(id: string, data: UpdatePostInput) {
+		if (!data.content && !data.title) return null;
+
+		const longId = translator.toUUID(id);
+
+		const result =
+			(await db
+				.updateTable("posts")
+				.set({ title: data.title, content: data.content })
+				.where("id", "=", longId)
+				.returningAll()
+				.executeTakeFirst()) ?? null;
+
+		return result ? { ...result, id: translator.fromUUID(result.id) } : null;
 	},
 });
 

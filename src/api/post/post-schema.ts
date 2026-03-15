@@ -30,9 +30,21 @@ export const getAllPostsPaginatedSchema = z.object({
 	}),
 });
 
+export const updatePostSchema = z.object({
+	body: z.object({
+		title: z.string().min(1).optional(),
+		content: z.string().min(1).optional(),
+	}),
+	params: z.object({
+		postId: z
+			.string()
+			.min(1, "Post ID is required")
+			.min(22, "Must be valid short UUID format.")
+			.max(22, "Must be valid short UUID format."),
+	}),
+});
+
 // Infer types from schemas
 export type GetPostParams = z.infer<typeof getPostByIdSchema>["params"];
 export type CreatePostInput = z.infer<typeof createPostSchema>["body"];
-export type GetPostsSchema = z.infer<
-	typeof getAllPostsPaginatedSchema
->["query"];
+export type UpdatePostInput = z.infer<typeof updatePostSchema>["body"];

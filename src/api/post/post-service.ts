@@ -1,6 +1,6 @@
 import AppError from "../../shared/errors/AppError.ts";
 import type { PostEntity, PostRepository } from "./post-repository.ts";
-import type { CreatePostInput } from "./post-schema.ts";
+import type { CreatePostInput, UpdatePostInput } from "./post-schema.ts";
 
 export interface PostService {
 	getPost(id: string): Promise<PostEntity>;
@@ -8,6 +8,11 @@ export interface PostService {
 	// TODO: fix return type
 	listPosts(page: number, limit: number): any;
 	deletePost(id: string, userId: string | null): Promise<void>;
+	updatePost(
+		id: string,
+		data: UpdatePostInput,
+		userId: string | null,
+	): Promise<PostEntity | null>;
 }
 
 export const createPostService = (repo: PostRepository) => ({
@@ -30,5 +35,16 @@ export const createPostService = (repo: PostRepository) => ({
 		if (post.user_id !== userId) throw new AppError(403, "Forbidden");
 
 		await repo.delete(id);
+	},
+	async updatePost(id: string, data: UpdatePostInput, userId: string | null) {
+		const post = await repo.getPost(id);
+
+		if (Object.keys(data).length === 0)
+			throw new AppError(400, "No valid fields provided for update");
+
+		if (!post) throw new AppError(404, "Post not found");
+		if (post.user_id !== userId) throw new AppError(403, "Forbidden");
+
+		return await repo.update(id, data);
 	},
 });
