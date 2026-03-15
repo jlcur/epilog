@@ -7,6 +7,7 @@ export interface PostService {
 	createPost(data: CreatePostInput, userId: string | null): Promise<PostEntity>;
 	// TODO: fix return type
 	listPosts(page: number, limit: number): any;
+	deletePost(id: string, userId: string | null): Promise<void>;
 }
 
 export const createPostService = (repo: PostRepository) => ({
@@ -21,5 +22,13 @@ export const createPostService = (repo: PostRepository) => ({
 	},
 	async listPosts(page: number, limit: number) {
 		return await repo.list(page, limit);
+	},
+	async deletePost(id: string, userId: string | null) {
+		const post = await repo.getPost(id);
+
+		if (!post) throw new AppError(404, "Post not found");
+		if (post.user_id !== userId) throw new AppError(403, "Forbidden");
+
+		await repo.delete(id);
 	},
 });

@@ -28,4 +28,10 @@ export const createPostHandlers = (service: PostService) => ({
 			posts: result.results,
 		});
 	},
+	deletePostById: async (_req: Request, res: Response) => {
+		const { postId } = res.locals.params;
+		const userId = res.locals.user.id;
+		await service.deletePost(postId, userId);
+		return res.status(204).send();
+	},
 });

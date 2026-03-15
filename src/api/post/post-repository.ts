@@ -79,6 +79,14 @@ export const createPostRepository = (db: Kysely<Database>) => ({
 			results: postsWithConvertedIds,
 		};
 	},
+	async delete(id: string) {
+		const longId = translator.toUUID(id);
+
+		return await db
+			.deleteFrom("posts")
+			.where("posts.id", "=", longId)
+			.execute();
+	},
 });
 
 export type PostRepository = ReturnType<typeof createPostRepository>;

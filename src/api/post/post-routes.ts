@@ -19,7 +19,12 @@ const handlers = createPostHandlers(service);
 
 router
 	.route("/:postId")
-	.get(validateRequest(getPostByIdSchema), handlers.getPostById);
+	.get(validateRequest(getPostByIdSchema), handlers.getPostById)
+	.delete(
+		authenticateUser,
+		validateRequest(getPostByIdSchema),
+		handlers.deletePostById,
+	);
 
 router
 	.route("/")
