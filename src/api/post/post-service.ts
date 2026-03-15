@@ -5,7 +5,8 @@ import type { CreatePostInput } from "./post-schema.ts";
 export interface PostService {
 	getPost(id: string): Promise<PostEntity>;
 	createPost(data: CreatePostInput, userId: string | null): Promise<PostEntity>;
-	listPosts(): Promise<PostEntity[]>;
+	// TODO: fix return type
+	listPosts(page: number, limit: number): any;
 }
 
 export const createPostService = (repo: PostRepository) => ({
@@ -18,7 +19,7 @@ export const createPostService = (repo: PostRepository) => ({
 		const postData = { ...data, userId };
 		return await repo.create(postData);
 	},
-	async listPosts() {
-		return await repo.list();
+	async listPosts(page: number, limit: number) {
+		return await repo.list(page, limit);
 	},
 });

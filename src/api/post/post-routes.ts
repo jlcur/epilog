@@ -4,7 +4,11 @@ import { validateRequest } from "../../middleware/validate.ts";
 import { db } from "../../shared/database/database.ts";
 import { createPostHandlers } from "./post-handler.ts";
 import { createPostRepository } from "./post-repository.ts";
-import { createPostSchema, getPostByIdSchema } from "./post-schema.ts";
+import {
+	createPostSchema,
+	getAllPostsPaginatedSchema,
+	getPostByIdSchema,
+} from "./post-schema.ts";
 import { createPostService } from "./post-service.ts";
 
 const router = express.Router();
@@ -24,6 +28,6 @@ router
 		validateRequest(createPostSchema),
 		handlers.createPost,
 	)
-	.get(handlers.getAllPosts);
+	.get(validateRequest(getAllPostsPaginatedSchema), handlers.getAllPosts);
 
 export default router;

@@ -46,18 +46,44 @@ export const createPostRepository = (db: Kysely<Database>) => ({
 
 		return { ...result, id: translator.fromUUID(result.id) };
 	},
-	async list() {
-		const result = await db
-			.selectFrom("posts")
-			.leftJoin("user", "posts.user_id", "user.id")
-			.selectAll("posts")
-			.select("user.name as user_name")
-			.execute();
+	async list(page: number, limit: number) {
+		const offset = (page - 1) * limit;
 
-		return result.map((row) => ({
+		// Base query, join posts with user table
+		const query = db
+			.selectFrom("posts")
+			.leftJoin("user", "posts.user_id", "user.id");
+
+		// Both of these queries are executed together in parallel
+		const [posts, totalPosts] = await Promise.all([
+			// Pagination
+			query
+				.selectAll("posts")
+				.select("user.name as user_name")
+				.limit(limit)
+				.offset(offset)
+				.execute(),
+
+			// Get the total posts count
+			query
+				.select((eb) => eb.fn.countAll<number>().as("count"))
+				.executeTakeFirstOrThrow(),
+		]);
+
+		const total = Number(totalPosts.count);
+		const totalPages = Math.ceil(total / limit);
+
+		const postsWithConvertedIds = posts.map((row) => ({
 			...row,
 			id: translator.fromUUID(row.id),
 		}));
+
+		return {
+			total,
+			page,
+			totalPages,
+			results: postsWithConvertedIds,
+		};
 	},
 });
 

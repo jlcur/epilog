@@ -23,6 +23,16 @@ export const createPostSchema = z.object({
 	}),
 });
 
+export const getAllPostsPaginatedSchema = z.object({
+	query: z.object({
+		page: z.string().optional(),
+		limit: z.string().optional(),
+	}),
+});
+
 // Infer types from schemas
 export type GetPostParams = z.infer<typeof getPostByIdSchema>["params"];
 export type CreatePostInput = z.infer<typeof createPostSchema>["body"];
+export type GetPostsSchema = z.infer<
+	typeof getAllPostsPaginatedSchema
+>["query"];

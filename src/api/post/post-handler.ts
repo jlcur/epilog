@@ -2,19 +2,30 @@ import type { Request, Response } from "express";
 import type { GetPostParams } from "./post-schema.ts";
 import type { PostService } from "./post-service.ts";
 
+const POSTS_LIMIT = 20;
+
 export const createPostHandlers = (service: PostService) => ({
-	getPostById: async (req: Request<GetPostParams>, res: Response) => {
-		const { postId } = req.params;
+	getPostById: async (_req: Request<GetPostParams>, res: Response) => {
+		const { postId } = res.locals.params;
 		const post = await service.getPost(postId);
 		return res.status(200).json(post);
 	},
-	createPost: async (req: Request, res: Response) => {
+	createPost: async (_req: Request, res: Response) => {
 		const userId = res.locals.user.id;
-		const post = await service.createPost(req.body, userId);
+		const post = await service.createPost(res.locals.body, userId);
 		return res.status(201).json(post);
 	},
 	getAllPosts: async (_req: Request, res: Response) => {
-		const posts = await service.listPosts();
-		return res.status(200).json(posts);
+		const page: number = Number(res.locals.query.page) || 1;
+		const limit: number = Number(res.locals.query.limit) || POSTS_LIMIT;
+
+		const result = await service.listPosts(page, limit);
+
+		return res.status(200).json({
+			totalPosts: result.total,
+			currentPage: result.page,
+			totalPages: result.totalPages,
+			posts: result.results,
+		});
 	},
 });
