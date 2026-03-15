@@ -5,6 +5,7 @@ import type { CreatePostInput } from "./post-schema.ts";
 export interface PostService {
 	getPost(id: string): Promise<PostEntity>;
 	createPost(data: CreatePostInput, userId: string | null): Promise<PostEntity>;
+	listPosts(): Promise<PostEntity[]>;
 }
 
 export const createPostService = (repo: PostRepository) => ({
@@ -16,5 +17,8 @@ export const createPostService = (repo: PostRepository) => ({
 	async createPost(data: CreatePostInput, userId: string | null) {
 		const postData = { ...data, userId };
 		return await repo.create(postData);
+	},
+	async listPosts() {
+		return await repo.list();
 	},
 });

@@ -13,4 +13,8 @@ export const createPostHandlers = (service: PostService) => ({
 		const post = await service.createPost(req.body, userId);
 		return res.status(201).json(post);
 	},
+	getAllPosts: async (_req: Request, res: Response) => {
+		const posts = await service.listPosts();
+		return res.status(200).json(posts);
+	},
 });

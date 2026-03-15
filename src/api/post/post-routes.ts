@@ -23,6 +23,7 @@ router
 		authenticateUser,
 		validateRequest(createPostSchema),
 		handlers.createPost,
-	);
+	)
+	.get(handlers.getAllPosts);
 
 export default router;

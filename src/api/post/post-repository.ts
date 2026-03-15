@@ -46,6 +46,19 @@ export const createPostRepository = (db: Kysely<Database>) => ({
 
 		return { ...result, id: translator.fromUUID(result.id) };
 	},
+	async list() {
+		const result = await db
+			.selectFrom("posts")
+			.leftJoin("user", "posts.user_id", "user.id")
+			.selectAll("posts")
+			.select("user.name as user_name")
+			.execute();
+
+		return result.map((row) => ({
+			...row,
+			id: translator.fromUUID(row.id),
+		}));
+	},
 });
 
 export type PostRepository = ReturnType<typeof createPostRepository>;
