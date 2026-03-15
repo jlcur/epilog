@@ -49,28 +49,22 @@ export const createPostRepository = (db: Kysely<Database>) => ({
 	async list(page: number, limit: number) {
 		const offset = (page - 1) * limit;
 
-		// Base query, join posts with user table
-		const query = db
+		const posts = await db
 			.selectFrom("posts")
-			.leftJoin("user", "posts.user_id", "user.id");
+			.leftJoin("user", "posts.user_id", "user.id")
+			.selectAll("posts")
+			.select("user.name as user_name")
+			.orderBy("posts.created_at", "desc")
+			.limit(limit)
+			.offset(offset)
+			.execute();
 
-		// Both of these queries are executed together in parallel
-		const [posts, totalPosts] = await Promise.all([
-			// Pagination
-			query
-				.selectAll("posts")
-				.select("user.name as user_name")
-				.limit(limit)
-				.offset(offset)
-				.execute(),
+		const { count } = await db
+			.selectFrom("posts")
+			.select((eb) => eb.fn.countAll<number>().as("count"))
+			.executeTakeFirstOrThrow();
 
-			// Get the total posts count
-			query
-				.select((eb) => eb.fn.countAll<number>().as("count"))
-				.executeTakeFirstOrThrow(),
-		]);
-
-		const total = Number(totalPosts.count);
+		const total = Number(count);
 		const totalPages = Math.ceil(total / limit);
 
 		const postsWithConvertedIds = posts.map((row) => ({
