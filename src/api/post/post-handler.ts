@@ -22,10 +22,10 @@ export const createPostHandlers = (service: PostService) => ({
 		const result = await service.listPosts(page, limit);
 
 		return res.status(200).json({
-			totalPosts: result.total,
+			data: result.results,
+			total: result.total,
 			currentPage: result.page,
 			totalPages: result.totalPages,
-			posts: result.results,
 		});
 	},
 	deletePostById: async (_req: Request, res: Response) => {
