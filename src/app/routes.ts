@@ -4,7 +4,7 @@ import { postRoutes } from "../api/post/index.ts";
 
 const router = express.Router();
 
-router.use("/comment", commentRoutes);
-router.use("/post", postRoutes);
+router.use("/comments", commentRoutes);
+router.use("/posts", postRoutes);
 
 export { router };
