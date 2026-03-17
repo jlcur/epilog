@@ -7,11 +7,12 @@ import { createCommentRepository } from "./comment-repository.ts";
 import {
 	createCommentSchema,
 	getCommentByIdSchema,
+	getCommentsOnPostSchema,
 	updateCommentSchema,
 } from "./comment-schema.ts";
 import { createCommentService } from "./comment-service.ts";
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 const repository = createCommentRepository(db);
 const service = createCommentService(repository);
@@ -33,7 +34,7 @@ router
 
 router
 	.route("/")
-	.get(handlers.getAllComments)
+	.get(validateRequest(getCommentsOnPostSchema), handlers.getAllComments)
 	.post(
 		authenticateUser,
 		validateRequest(createCommentSchema),

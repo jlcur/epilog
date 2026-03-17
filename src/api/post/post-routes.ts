@@ -2,6 +2,7 @@ import express from "express";
 import { authenticateUser } from "../../middleware/authenticate-user.ts";
 import { validateRequest } from "../../middleware/validate.ts";
 import { db } from "../../shared/database/database.ts";
+import commentRouter from "../comment/comment-routes.ts";
 import { createPostHandlers } from "./post-handler.ts";
 import { createPostRepository } from "./post-repository.ts";
 import {
@@ -17,6 +18,9 @@ const router = express.Router();
 const repository = createPostRepository(db);
 const service = createPostService(repository);
 const handlers = createPostHandlers(service);
+
+// Mount the comment router as a sub-resource
+router.use("/:postId/comments", commentRouter);
 
 router
 	.route("/:postId")

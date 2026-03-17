@@ -11,13 +11,19 @@ export const createCommentHandlers = (service: CommentService) => ({
 	},
 
 	getAllComments: async (_req: Request, res: Response) => {
-		const comments = await service.listComments();
+		const postId = res.locals.params.postId;
+		const comments = await service.listComments(postId);
 		return res.status(200).json(comments);
 	},
 
-	createComment: async (req: Request, res: Response) => {
+	createComment: async (_req: Request, res: Response) => {
 		const userId = res.locals.user.id;
-		const comment = await service.createComment(req.body, userId);
+		const postId = res.locals.params.postId;
+		const comment = await service.createComment(
+			res.locals.body,
+			userId,
+			postId,
+		);
 		return res.status(201).json(comment);
 	},
 

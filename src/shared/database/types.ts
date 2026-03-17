@@ -8,6 +8,7 @@ export interface CommentTable {
 	parent_id: string | null;
 	is_deleted: Generated<boolean>;
 	user_id: string | null;
+	post_id: string;
 }
 
 interface PostsTable {

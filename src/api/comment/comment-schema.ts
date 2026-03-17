@@ -22,6 +22,9 @@ export const createCommentSchema = z.object({
 			.min(1, "Comment content must be at least one character"),
 		parent_id: z.string().nullable().optional(),
 	}),
+	params: z.object({
+		postId: z.string().min(1).min(22).max(22),
+	}),
 });
 
 export const updateCommentSchema = z.object({
@@ -32,6 +35,16 @@ export const updateCommentSchema = z.object({
 		commentId: z
 			.string()
 			.min(1, "Comment ID is required")
+			.min(22, "Must be valid short UUID format.")
+			.max(22, "Must be valid short UUID format."),
+	}),
+});
+
+export const getCommentsOnPostSchema = z.object({
+	params: z.object({
+		postId: z
+			.string()
+			.min(1, "Post ID is required.")
 			.min(22, "Must be valid short UUID format.")
 			.max(22, "Must be valid short UUID format."),
 	}),

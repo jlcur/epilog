@@ -7,10 +7,11 @@ import type {
 
 export interface CommentService {
 	getComment(id: string): Promise<CommentEntity>;
-	listComments(): Promise<CommentEntity[]>;
+	listComments(postId?: string): Promise<CommentEntity[]>;
 	createComment(
 		data: CreateCommentInput,
 		userId: string | null,
+		postId: string,
 	): Promise<CommentEntity>;
 	deleteComment(id: string, userId: string | null): Promise<void>;
 	updateComment(
@@ -28,11 +29,15 @@ export const createCommentService = (
 		if (!comment) throw new AppError(404, "Comment not found");
 		return comment;
 	},
-	async listComments() {
-		return await repo.list();
+	async listComments(postId?: string) {
+		return await repo.list(postId);
 	},
-	async createComment(data: CreateCommentInput, userId: string | null) {
-		const commentData = { ...data, userId };
+	async createComment(
+		data: CreateCommentInput,
+		userId: string | null,
+		postId: string,
+	) {
+		const commentData = { ...data, userId, postId };
 		return await repo.create(commentData);
 	},
 	async deleteComment(id: string, userId: string | null) {

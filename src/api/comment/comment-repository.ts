@@ -39,6 +39,7 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 					parent_id: result.parent_id
 						? translator.fromUUID(result.parent_id)
 						: null,
+					post_id: result.post_id ? translator.fromUUID(result.post_id) : null,
 				}
 			: undefined;
 	},
@@ -46,18 +47,24 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 	 * Returns all comments
 	 * @returns All comments
 	 */
-	async list() {
-		const result = await db
+	async list(postId?: string) {
+		let query = db
 			.selectFrom("comments")
 			.leftJoin("user", "comments.user_id", "user.id")
 			.selectAll("comments")
-			.select("user.name as user_name")
-			.execute();
+			.select("user.name as user_name");
+
+		if (postId) {
+			query = query.where("comments.post_id", "=", translator.toUUID(postId));
+		}
+
+		const result = await query.execute();
 
 		return result.map((row) => ({
 			...row,
 			id: translator.fromUUID(row.id),
 			parent_id: row.parent_id ? translator.fromUUID(row.parent_id) : null,
+			post_id: row.post_id ? translator.fromUUID(row.post_id) : null,
 		}));
 	},
 	/**
@@ -65,8 +72,11 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 	 * @param data The comment data to create
 	 * @returns The created comment
 	 */
-	async create(data: CreateCommentInput & { userId: string | null }) {
+	async create(
+		data: CreateCommentInput & { userId: string | null; postId: string },
+	) {
 		const longId = data.parent_id ? translator.toUUID(data.parent_id) : null;
+		const longPostId = translator.toUUID(data.postId);
 
 		const result = await db
 			.insertInto("comments")
@@ -74,6 +84,7 @@ export const createCommentRepository = (db: Kysely<Database>) => ({
 				content: data.content,
 				parent_id: longId,
 				user_id: data.userId,
+				post_id: longPostId,
 			})
 			.returningAll()
 			.executeTakeFirstOrThrow();
