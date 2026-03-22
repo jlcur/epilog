@@ -1,4 +1,24 @@
-import type { ColumnType, Generated } from "kysely";
+import type {
+	ColumnType,
+	Generated,
+	Insertable,
+	Selectable,
+	Updateable,
+} from "kysely";
+
+interface VotesTable {
+	id: Generated<string>;
+	user_id: string;
+	comment_id: string | null;
+	post_id: string | null;
+	value: 1 | -1;
+	created_at: ColumnType<Date, string | undefined, never>;
+	updated_at: ColumnType<Date, never, never>;
+}
+
+export type Vote = Selectable<VotesTable>;
+export type NewVote = Insertable<VotesTable>;
+export type VoteUpdate = Updateable<VotesTable>;
 
 export interface CommentTable {
 	id: Generated<string>;
@@ -72,4 +92,5 @@ export interface Database {
 	account: AccountTable;
 	verification: VerificationTable;
 	posts: PostsTable;
+	votes: VotesTable;
 }
