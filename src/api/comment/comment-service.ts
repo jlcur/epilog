@@ -7,7 +7,13 @@ import type {
 
 export interface CommentService {
 	getComment(id: string): Promise<CommentEntity>;
+	getCommentWithVotes(
+		id: string,
+		userId: string | null,
+	): Promise<CommentEntity & { vote_score: number; user_vote: 1 | -1 | null }>;
 	listComments(postId?: string): Promise<CommentEntity[]>;
+	// biome-ignore lint/suspicious/noExplicitAny: TODO: fix
+	listCommentsWithVotes(userId: string | null, postId?: string): Promise<any>;
 	createComment(
 		data: CreateCommentInput,
 		userId: string | null,
@@ -29,8 +35,16 @@ export const createCommentService = (
 		if (!comment) throw new AppError(404, "Comment not found");
 		return comment;
 	},
+	async getCommentWithVotes(id: string, userId: string | null) {
+		const comment = await repo.getCommentWithVotes(id, userId);
+		if (!comment) throw new AppError(404, "Comment not found");
+		return comment;
+	},
 	async listComments(postId?: string) {
 		return await repo.list(postId);
+	},
+	async listCommentsWithVotes(userId: string | null, postId?: string) {
+		return await repo.listWithVotes(userId, postId);
 	},
 	async createComment(
 		data: CreateCommentInput,
