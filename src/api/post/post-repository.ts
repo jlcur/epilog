@@ -1,4 +1,4 @@
-import type { Kysely } from "kysely";
+import { type Kysely, sql } from "kysely";
 import short from "short-uuid";
 import type { Database } from "../../shared/database/types.ts";
 import type { CreatePostInput, UpdatePostInput } from "./post-schema.ts";
@@ -86,6 +86,87 @@ export const createPostRepository = (db: Kysely<Database>) => ({
 			.deleteFrom("posts")
 			.where("posts.id", "=", longId)
 			.execute();
+	},
+	async getPostWithVotes(id: string, userId: string | null) {
+		const longId = translator.toUUID(id);
+
+		const result = await db
+			.selectFrom("posts")
+			.leftJoin("user", "posts.user_id", "user.id")
+			.where("posts.id", "=", longId)
+			.selectAll("posts")
+			.select("user.name as user_name")
+			.select((eb) => [
+				eb
+					.selectFrom("votes")
+					.select(sql<number>`coalesce(sum(value), 0)`.as("v"))
+					.whereRef("votes.post_id", "=", "posts.id")
+					.as("vote_score"),
+				userId
+					? eb
+							.selectFrom("votes")
+							.select("votes.value")
+							.whereRef("votes.post_id", "=", "posts.id")
+							.where("votes.user_id", "=", userId)
+							.as("user_vote")
+					: sql<1 | -1 | null>`null`.as("user_vote"),
+			])
+			.executeTakeFirst();
+
+		return result
+			? {
+					...result,
+					id: translator.fromUUID(result.id),
+					vote_score: Number(result.vote_score),
+				}
+			: undefined;
+	},
+	async listWithVotes(page: number, limit: number, userId: string | null) {
+		const offset = (page - 1) * limit;
+
+		const posts = await db
+			.selectFrom("posts")
+			.leftJoin("user", "posts.user_id", "user.id")
+			.selectAll("posts")
+			.select("user.name as user_name")
+			.select((eb) => [
+				eb
+					.selectFrom("votes")
+					.select(sql<number>`coalesce(sum(value), 0)`.as("v"))
+					.whereRef("votes.post_id", "=", "posts.id")
+					.as("vote_score"),
+				userId
+					? eb
+							.selectFrom("votes")
+							.select("votes.value")
+							.whereRef("votes.post_id", "=", "posts.id")
+							.where("votes.user_id", "=", userId)
+							.as("user_vote")
+					: sql<1 | -1 | null>`null`.as("user_vote"),
+			])
+			.orderBy("posts.created_at", "desc")
+			.limit(limit)
+			.offset(offset)
+			.execute();
+
+		const { count } = await db
+			.selectFrom("posts")
+			.select((eb) => eb.fn.countAll<number>().as("count"))
+			.executeTakeFirstOrThrow();
+
+		const total = Number(count);
+		const totalPages = Math.ceil(total / limit);
+
+		return {
+			total,
+			page,
+			totalPages,
+			results: posts.map((row) => ({
+				...row,
+				id: translator.fromUUID(row.id),
+				vote_score: Number(row.vote_score),
+			})),
+		};
 	},
 	async update(id: string, data: UpdatePostInput) {
 		if (!data.content && !data.title) return null;

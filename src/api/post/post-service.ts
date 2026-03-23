@@ -4,9 +4,14 @@ import type { CreatePostInput, UpdatePostInput } from "./post-schema.ts";
 
 export interface PostService {
 	getPost(id: string): Promise<PostEntity>;
+	getPostWithVotes(
+		id: string,
+		userId: string | null,
+	): Promise<PostEntity & { vote_score: number; user_vote: 1 | -1 | null }>;
 	createPost(data: CreatePostInput, userId: string | null): Promise<PostEntity>;
 	// TODO: fix return type
 	listPosts(page: number, limit: number): any;
+	listPostsWithVotes(page: number, limit: number, userId: string | null): any;
 	deletePost(id: string, userId: string | null): Promise<void>;
 	updatePost(
 		id: string,
@@ -21,12 +26,20 @@ export const createPostService = (repo: PostRepository) => ({
 		if (!post) throw new AppError(404, "Post not found");
 		return post;
 	},
+	async getPostWithVotes(id: string, userId: string | null) {
+		const post = await repo.getPostWithVotes(id, userId);
+		if (!post) throw new AppError(404, "Post not found");
+		return post;
+	},
 	async createPost(data: CreatePostInput, userId: string | null) {
 		const postData = { ...data, userId };
 		return await repo.create(postData);
 	},
 	async listPosts(page: number, limit: number) {
 		return await repo.list(page, limit);
+	},
+	async listPostsWithVotes(page: number, limit: number, userId: string | null) {
+		return await repo.listWithVotes(page, limit, userId);
 	},
 	async deletePost(id: string, userId: string | null) {
 		const post = await repo.getPost(id);
