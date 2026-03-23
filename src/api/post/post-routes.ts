@@ -3,6 +3,9 @@ import { authenticateUser } from "../../middleware/authenticate-user.ts";
 import { validateRequest } from "../../middleware/validate.ts";
 import { db } from "../../shared/database/database.ts";
 import commentRouter from "../comment/comment-routes.ts";
+import { createVoteRepository } from "../vote/vote-repository.ts";
+import { votePostSchema } from "../vote/vote-schema.ts";
+import { createVoteService } from "../vote/vote-service.ts";
 import { createPostHandlers } from "./post-handler.ts";
 import { createPostRepository } from "./post-repository.ts";
 import {
@@ -16,8 +19,10 @@ import { createPostService } from "./post-service.ts";
 const router = express.Router();
 
 const repository = createPostRepository(db);
+const voteRepository = createVoteRepository(db);
 const service = createPostService(repository);
-const handlers = createPostHandlers(service);
+const voteService = createVoteService(voteRepository);
+const handlers = createPostHandlers(service, voteService);
 
 // Mount the comment router as a sub-resource
 router.use("/:postId/comments", commentRouter);
@@ -37,12 +42,24 @@ router
 	);
 
 router
+	.route("/:postId/vote")
+	.post(
+		authenticateUser,
+		validateRequest(votePostSchema),
+		handlers.togglePostVote,
+	);
+
+router
 	.route("/")
 	.post(
 		authenticateUser,
 		validateRequest(createPostSchema),
 		handlers.createPost,
 	)
-	.get(validateRequest(getAllPostsPaginatedSchema), handlers.getAllPosts);
+	.get(
+		authenticateUser,
+		validateRequest(getAllPostsPaginatedSchema),
+		handlers.getAllPosts,
+	);
 
 export default router;

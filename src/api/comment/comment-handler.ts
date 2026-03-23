@@ -1,18 +1,23 @@
 import type { Request, Response } from "express";
-
+import type { VoteService } from "../vote/vote-service.ts";
 import type { GetCommentParams } from "./comment-schema.ts";
 import type { CommentService } from "./comment-service.ts";
 
-export const createCommentHandlers = (service: CommentService) => ({
+export const createCommentHandlers = (
+	service: CommentService,
+	voteService: VoteService,
+) => ({
 	getCommentById: async (_req: Request<GetCommentParams>, res: Response) => {
 		const { commentId } = res.locals.params;
-		const comment = await service.getComment(commentId);
+		const userId: string | null = res.locals.user?.id ?? null;
+		const comment = await service.getCommentWithVotes(commentId, userId);
 		return res.status(200).json(comment);
 	},
 
 	getAllComments: async (_req: Request, res: Response) => {
 		const postId = res.locals.params.postId;
-		const comments = await service.listComments(postId);
+		const userId: string | null = res.locals.user?.id ?? null;
+		const comments = await service.listCommentsWithVotes(userId, postId);
 		return res.status(200).json(comments);
 	},
 
@@ -43,5 +48,12 @@ export const createCommentHandlers = (service: CommentService) => ({
 			userId,
 		);
 		return res.status(200).json(comment);
+	},
+	toggleCommentVote: async (_req: Request, res: Response) => {
+		const { commentId } = res.locals.params;
+		const userId = res.locals.user.id;
+		const { direction } = res.locals.body;
+		await voteService.setCommentVote(userId, commentId, direction);
+		return res.status(200).send();
 	},
 });
