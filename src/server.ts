@@ -1,6 +1,9 @@
 import { app } from "./app/app.ts";
 import config from "./app/config/config.ts";
+import { migrateToLatest } from "./shared/database/migrate.ts";
 import logger from "./shared/logging/logger.ts";
+
+await migrateToLatest();
 
 // biome-ignore lint/suspicious/noImplicitAnyLet: server
 let server;
