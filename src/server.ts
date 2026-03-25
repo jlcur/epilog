@@ -3,30 +3,32 @@ import config from "./app/config/config.ts";
 import { migrateToLatest } from "./shared/database/migrate.ts";
 import logger from "./shared/logging/logger.ts";
 
-await migrateToLatest();
+(async () => {
+	await migrateToLatest();
 
-// biome-ignore lint/suspicious/noImplicitAnyLet: server
-let server;
-server = app.listen(config.port, () => {
-	logger.info(`Listening on port ${config.port}`);
-});
+	// biome-ignore lint/suspicious/noImplicitAnyLet: server
+	let server;
+	server = app.listen(config.port, () => {
+		logger.info(`Listening on port ${config.port}`);
+	});
 
-process.on("uncaughtException", (error) => {
-	logger.error(error);
+	process.on("uncaughtException", (error) => {
+		logger.error(error);
 
-	if (server) {
-		server.close(() => {
-			logger.info("Server closed");
+		if (server) {
+			server.close(() => {
+				logger.info("Server closed");
+				process.exit(1);
+			});
+		} else {
 			process.exit(1);
-		});
-	} else {
-		process.exit(1);
-	}
-});
+		}
+	});
 
-process.on("SIGTERM", () => {
-	logger.fatal("SIGTERM received");
-	if (server) {
-		server.close();
-	}
-});
+	process.on("SIGTERM", () => {
+		logger.fatal("SIGTERM received");
+		if (server) {
+			server.close();
+		}
+	});
+})();
