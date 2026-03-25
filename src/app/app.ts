@@ -32,7 +32,8 @@ app.use(
 	}),
 );
 
-app.use("/api/v1", router);
+const prefix = process.env.API_PREFIX || "/api/v1";
+app.use(prefix, router);
 
 app.get("/", (_req: Request, res: Response) => {
 	res.send("Hello, world!");
