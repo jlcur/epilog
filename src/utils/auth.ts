@@ -14,5 +14,5 @@ export const auth = betterAuth({
 
 	plugins: [admin()],
 
-	trustedOrigins: ["http://localhost:3000"],
+	trustedOrigins: [process.env.CORS_ORIGIN || "http://localhost:3000"],
 });
