@@ -1,0 +1,15 @@
+import { defineConfig } from "tsup";
+
+export default defineConfig([
+	{
+		entry: ["src/server.ts"],
+		format: ["cjs"],
+		outDir: "dist",
+	},
+	{
+		entry: ["src/shared/database/migrations/*.ts"],
+		format: ["cjs"],
+		outDir: "dist/migrations",
+		outExtension: () => ({ js: ".cjs" }),
+	},
+]);
