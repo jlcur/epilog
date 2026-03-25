@@ -38,4 +38,8 @@ app.get("/", (_req: Request, res: Response) => {
 	res.send("Hello, world!");
 });
 
+app.get("/health", (_req: Request, res: Response) => {
+	res.status(200).json({ status: "ok" });
+});
+
 app.use(handleError);
