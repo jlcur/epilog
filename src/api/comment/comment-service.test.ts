@@ -47,6 +47,7 @@ describe("CommentService unit tests", () => {
 
 	it("deleteComment: should throw 404 if repository returns false", async () => {
 		const mockRepo: Partial<CommentRepository> = {
+			getComment: async () => undefined,
 			delete: async () => false,
 		};
 
@@ -91,6 +92,10 @@ describe("CommentService unit tests", () => {
 
 	it("deleteComment: should resolve when repository returns true", async () => {
 		const mockRepo: Partial<CommentRepository> = {
+			getComment: async (id) =>
+				id === "1"
+					? { id: "1", content: "mock", created_at: new Date() }
+					: undefined,
 			delete: async (id) => id === "1",
 		};
 
@@ -102,6 +107,7 @@ describe("CommentService unit tests", () => {
 
 	it("deleteComment: should throw 404 when repository returns false", async () => {
 		const mockRepo: Partial<CommentRepository> = {
+			getComment: async () => undefined,
 			delete: async () => false,
 		};
 
@@ -117,6 +123,10 @@ describe("CommentService unit tests", () => {
 		const updateData = { content: "Updated Content" };
 
 		const mockRepo: Partial<CommentRepository> = {
+			getComment: async (id) =>
+				id === "1"
+					? { id: "1", content: "old", created_at: new Date() }
+					: undefined,
 			update: async (id, data) => ({
 				id,
 				content: data.content!,
@@ -133,6 +143,7 @@ describe("CommentService unit tests", () => {
 
 	it("updateComment: should throw 404 if repository returns null", async () => {
 		const mockRepo: Partial<CommentRepository> = {
+			getComment: async () => undefined,
 			update: async () => null,
 		};
 

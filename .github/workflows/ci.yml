@@ -56,3 +56,10 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Deploy to Coolify
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: >-
+          curl --fail -X GET
+          -H "Authorization: Bearer ${{ secrets.COOLIFY_WEBHOOK_TOKEN }}"
+          "${{ secrets.COOLIFY_WEBHOOK_URL }}"

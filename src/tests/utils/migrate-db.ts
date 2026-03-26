@@ -1,9 +1,14 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import { FileMigrationProvider, Migrator } from "kysely";
+import { FileMigrationProvider, Migrator, sql } from "kysely";
 import { db } from "../../shared/database/database.ts";
 
 export async function migrateDb() {
+	// Migrations reference user.id (better-auth's table). Create a stub so FK constraints resolve.
+	await sql`CREATE TABLE IF NOT EXISTS "user" (id text PRIMARY KEY)`.execute(
+		db,
+	);
+
 	const migrator = new Migrator({
 		db,
 		provider: new FileMigrationProvider({
