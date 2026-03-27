@@ -11,5 +11,6 @@ export default defineConfig([
 		entry: ["src/shared/database/migrations/*.ts"],
 		format: ["cjs"],
 		outDir: "dist/migrations",
+		outExtension: () => ({ js: ".cjs" }),
 	},
 ]);
