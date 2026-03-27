@@ -20,7 +20,9 @@ app.use(
 	}),
 );
 
-app.all("/api/v1/auth/*any", toNodeHandler(auth));
+const prefix = process.env.API_PREFIX || "/api/v1";
+
+app.all(`${prefix}/auth/*any`, toNodeHandler(auth));
 
 // Parse JSON request body
 app.use(express.json());
@@ -31,8 +33,6 @@ app.use(
 		logger,
 	}),
 );
-
-const prefix = process.env.API_PREFIX || "/api/v1";
 app.use(prefix, router);
 
 app.get("/", (_req: Request, res: Response) => {
