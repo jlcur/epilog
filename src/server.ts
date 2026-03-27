@@ -2,9 +2,12 @@ import { app } from "./app/app.ts";
 import config from "./app/config/config.ts";
 import { migrateToLatest } from "./shared/database/migrate.ts";
 import logger from "./shared/logging/logger.ts";
+import { auth } from "./utils/auth.ts";
 
 (async () => {
 	await migrateToLatest();
+	const ctx = await auth.$context;
+	await ctx.runMigrations();
 
 	// biome-ignore lint/suspicious/noImplicitAnyLet: server
 	let server;
