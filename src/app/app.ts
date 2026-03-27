@@ -20,19 +20,19 @@ app.use(
 	}),
 );
 
-const prefix = process.env.API_PREFIX || "/api/v1";
-
-app.all(`${prefix}/auth/*any`, toNodeHandler(auth));
-
-// Parse JSON request body
-app.use(express.json());
-
 // Request logging
 app.use(
 	pinoHttp({
 		logger,
 	}),
 );
+
+const prefix = process.env.API_PREFIX || "/api/v1";
+
+app.all(`${prefix}/auth/*any`, toNodeHandler(auth));
+
+// Parse JSON request body
+app.use(express.json());
 app.use(prefix, router);
 
 app.get("/", (_req: Request, res: Response) => {
