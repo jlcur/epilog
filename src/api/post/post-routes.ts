@@ -1,5 +1,8 @@
 import express from "express";
-import { authenticateUser } from "../../middleware/authenticate-user.ts";
+import {
+	authenticateUser,
+	optionalAuthenticateUser,
+} from "../../middleware/authenticate-user.ts";
 import { validateRequest } from "../../middleware/validate.ts";
 import { db } from "../../shared/database/database.ts";
 import commentRouter from "../comment/comment-routes.ts";
@@ -57,7 +60,7 @@ router
 		handlers.createPost,
 	)
 	.get(
-		authenticateUser,
+		optionalAuthenticateUser,
 		validateRequest(getAllPostsPaginatedSchema),
 		handlers.getAllPosts,
 	);
